@@ -16,7 +16,7 @@ def read_data(filename):
 ## Preprocess Data
 def preprocess_data(filename):
     df = read_data(filename)
-    print(f'Before Preprocessing: {df.shape}')
+    print(f'Before Cleaning: {df.shape}')
     df.loc[:,'Car_Compny'] = df.CarName.apply(lambda car_cmpny: car_cmpny.split(' ')[0])
     df['carvolume'] = df['carheight']*df['carwidth']*df['carlength']
     df['mpg_enginsize_ratio'] = df['citympg']/df['enginesize']
@@ -30,20 +30,17 @@ def preprocess_data(filename):
     df.loc[df.cylindernumber.isin(['two','three','four']),'cylindernumber_new_cats']='cno_a'
     df.loc[df.cylindernumber.isin(['five','six']),'cylindernumber_new_cats']='cno_b'
     df.loc[df.cylindernumber.isin(['twelve','eight']),'cylindernumber_new_cats']='cno_c'
-    utility.transform_data(df)
-    df = utility.create_dummy_vars(df,'cylindernumber_new_cats','dummy','_')
-    df = utility.create_dummy_vars(df,'car_body_new_cats','dummy','_')
-    df = df [model_features].copy()
+    df.drop(['enginetype', 'cylindernumber', 'carbody'], axis='columns')
     df.to_csv('cleaned_data.csv', index=None)
     return df
 
 
 if __name__ == "__main__":
     # Reads the file train.csv
-    train_file = os.path.join('CarPrice_Assignment.csv')
+    train_file = os.path.join('car_price_data.csv')
 
     if os.path.exists(train_file):
         cleaned_df = preprocess_data(train_file)
-        print(f'After Preprocessing: {cleaned_df.shape}')
+        print(f'After Cleaning: {cleaned_df.shape}')
     else:
         print(f'File not found {train_file}')

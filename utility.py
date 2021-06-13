@@ -1,6 +1,7 @@
 import pandas as pd 
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
+from sklearn.model_selection import cross_val_score
 
 def read_data(filename):
     df = pd.read_csv(filename)
@@ -69,14 +70,10 @@ def get_model_diagnostic_plots(y_actual, y_predicted):
     sns.distplot(residual, ax=ax[1][1])
 #     fig.delaxes(ax[1][1])
 
-def test_model(df, target_var, numeric_transform_vars, model, transfomer):
-    df.loc[:, numeric_transform_vars] = transfomer.transform(df.loc[:,numeric_transform_vars])
-    X_test = df.drop(target_var, axis='columns')
-    y_actual = df[target_var]
-    
-    X_test_ = sm.add_constant(X_test)
-    y_predicted  = model.predict(X_test_)
-    return y_actual, y_predicted
+def test_model(model, X, y):
+    scores = cross_val_score(model, X, y, cv=5)
+    print(scores)
+    return scores
 
 def make_prediction(df=None, features=None, tar_var=None, model=None):
     y_actual = df[tar_var]

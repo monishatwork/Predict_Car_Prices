@@ -1,19 +1,18 @@
 import pandas as pd 
-from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 from functools import partial
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
 import statsmodels.api as sm
 import utility 
 from functools import partial
 import clean_data
+import pickle
 
 
-
-numeric_transform_vars = ['price','horsepower','carvolume','mpg_enginsize_ratio','compressionratio',\
-                          'wheelbase','peakrpm','enginesize']
-
-def create_reg_model(df=None,target_var=None,model_params=None):
+def create_reg_model(df=None, target_var=None, model_params=None):
 #     print(model_params)
     X_train = df.drop(target_var,axis='columns')
     y_train = df[target_var]
@@ -29,11 +28,32 @@ def make_prediction(df=None, features=None, tar_var=None, model=None):
     return y_actual, y_pred
 
 
-def create_model_dataset(model_data):
-    train, test = train_test_split(model_data, train_size = 0.7, test_size = 0.3, random_state = 100)    
-    scaler = MinMaxScaler()
-    train.loc[:, numeric_transform_vars] = scaler.fit_transform(train[numeric_transform_vars])
-    return train, test, scaler
+def create_train_model_pipeline(model_data):
+
+    X = model_data.drop('price', axis='columns')
+    y = model_data['price']
+    
+    numeric_features = ['horsepower','carvolume','mpg_enginsize_ratio','compressionratio',\
+                          'wheelbase','peakrpm','enginesize']
+    
+    numeric_transformer = Pipeline(steps=[('min_max', MinMaxScaler())])
+
+    categorical_features = [cat_cols for cat_cols in model_data.select_dtypes(include='object').columns]
+    categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', numeric_transformer, numeric_features),
+            ('cat', categorical_transformer, categorical_features)])
+    
+    regresor = Pipeline(steps=[('preprocessor', preprocessor),
+                      ('lr', LinearRegression())])
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    
+    regresor.fit(X_train, y_train)
+    
+    return regresor, X, y
 
 
 def export_model(model):
@@ -44,15 +64,8 @@ def export_model(model):
         print(f"Model saved at {pkl_path}")
 
 
+cleaned_data = utility.read_data("cleaned_data.csv")
+model, X, y = create_train_model_pipeline(cleaned_data)
 
-train, test, scaler = create_model_dataset(clean_data.preprocess_data())
-model_1_params = ['horsepower']
-reg_model = partial(utility.create_reg_model, train, 'price')
-model_1 = reg_model(model_1_params)
-
-y_actual, y_pred = make_prediction(df=train, features=model_1_params, \
-                                  tar_var='price', model=model_1['model'])
-
-
-utility.test_model(test, 'price', numeric_transform_vars, model_1, scaler)
+utility.test_model(model, X, y)
 
