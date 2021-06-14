@@ -29,6 +29,14 @@ def make_prediction(df=None, features=None, tar_var=None, model=None):
 
 
 def create_train_model_pipeline(model_data):
+    '''
+    input: cleaned data
+    returns: model    
+    
+    creates the pipeline out of the model_data input, splits the model_data
+    into train and test, perfoms transformation on the data, supplies the 
+    data to the model, creates the model.
+    '''
 
     X = model_data.drop('price', axis='columns')
     y = model_data['price']
@@ -57,7 +65,12 @@ def create_train_model_pipeline(model_data):
 
 
 def export_model(model):
-    # Save the model
+    '''
+    input: trained model
+    returns: pickel file of the model
+    exports trained model and its weigths.
+    '''
+
     pkl_path = 'model.pkl'
     with open(pkl_path, 'wb') as file:
         pickle.dump(model, file)
