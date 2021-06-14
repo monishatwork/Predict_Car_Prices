@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 from sklearn.model_selection import cross_val_score
-
+import numpy as np
 def read_data(filename):
     df = pd.read_csv(filename)
     return df
@@ -71,7 +71,7 @@ def get_model_diagnostic_plots(y_actual, y_predicted):
 #     fig.delaxes(ax[1][1])
 
 def test_model(model, X, y):
-    scores = cross_val_score(model, X, y, cv=5)
+    scores = cross_val_score(model, X, y, cv=9, scoring='neg_mean_squared_error')
     print(scores)
     return scores
 

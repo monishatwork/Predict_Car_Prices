@@ -2,11 +2,6 @@ import utility
 import os
 from pandas import read_csv
 
-model_features = ['enc_fueltype','enc_enginetype','horsepower','enc_carbody','mpg_enginsize_ratio',\
-                  'price','carvolume','compressionratio','enc_enginetype_new_cats','enc_cylindernumber_new_cats'\
-                 ,'dummy_cno_b','dummy_cno_c','dummy_carbody_b','enc_drivewheel','wheelbase','enc_fuelsystem'\
-                 ,'enc_cylindernumber','enc_enginelocation','enginesize','peakrpm','enc_Car_Compny']
-
 ## Read Data
 def read_data(filename):
     df = read_csv(filename)
